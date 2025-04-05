@@ -39,6 +39,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
+    // Validate the request data type
     if (!isFormDataType(body)) {
       return NextResponse.json(
         { error: 'Invalid request data' },
