@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ChangeEvent, useState } from 'react';
 
 // Define types for form data
@@ -25,11 +26,12 @@ const initialFormData = {
 } as const;
 
 export default function CreateAccount() {
+  const router = useRouter();
   const [formData, setFormData] = useState<FormDataType>(initialFormData);
   const [errors, setErrors] = useState<ValidationErrorsType>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const onChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const onChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -65,13 +67,48 @@ export default function CreateAccount() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     // Validate form
     if (!validateForm()) return;
 
     setIsSubmitting(true);
+
+    try {
+      // Convert savings goal to number for the API call
+      // {nickname: 'My savings account', savingsGoal: 500, accountType: 'savings'}
+      const payload = {
+        nickname: formData.nickname,
+        accountType: formData.accountType,
+        savingsGoal:
+          formData.accountType === 'savings'
+            ? parseFloat(formData.savingsGoal)
+            : undefined,
+      };
+
+      // Make API request
+      // TODO: Make API request to create account
+      const response = await fetch('/api/create-account', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        // TODO: Handle error and display error message to user
+        console.error('Failed to create account');
+      }
+
+      // Redirect back to home with success message
+      router.push('/?success=true');
+    } catch (error) {
+      console.error('Creating account error:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-8">
@@ -92,10 +129,10 @@ export default function CreateAccount() {
               type="text"
               id="nickname"
               name="nickname"
+              className="w-full rounded-md border border-neutral-500 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
               value={formData.nickname}
               onChange={onChange}
-              className="w-full rounded-md border border-neutral-500 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              placeholder="e.g., My Primary Account"
+              placeholder="Enter a nickname between 5 and 30 characters"
               // Note: Native validation attributes are commented out to allow testing custom error messages.
               //   minLength={5}
               //   maxLength={30}
@@ -159,13 +196,14 @@ export default function CreateAccount() {
                 Savings Goal ($)
               </label>
               <input
+                inputMode="numeric"
                 type="number"
                 id="savingsGoal"
                 name="savingsGoal"
+                className="w-full rounded-md border border-neutral-500 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 value={formData.savingsGoal}
                 onChange={onChange}
-                className="w-full rounded-md border border-neutral-500 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                placeholder="Enter amount up to $1,000,000"
+                placeholder="Enter a savings goal up to $1,000,000"
                 // Note: Native validation attributes are commented out to allow testing custom error messages.
                 // min={0}
                 // max={1000000}
@@ -190,7 +228,7 @@ export default function CreateAccount() {
               disabled={isSubmitting}
               className="cursor-pointer rounded-4xl bg-fuchsia-950 px-4 py-2 font-bold text-white transition-colors duration-300 hover:bg-fuchsia-800 disabled:opacity-50"
             >
-              {isSubmitting ? 'Creating...' : 'Create Account'}
+              {isSubmitting ? 'Creating Account...' : 'Create Account'}
             </button>
           </div>
         </form>
