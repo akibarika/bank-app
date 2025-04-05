@@ -1,3 +1,4 @@
+import { VALIDATION_MESSAGES } from '@/constants/messages';
 import { FormDataType } from '../create-account/page';
 
 type ValidationErrorsType = {
@@ -25,18 +26,18 @@ export const validateFormData = (
   const { nickname, accountType, savingsGoal } = sanitized;
 
   if (nickname.length < 5 || nickname.length > 30) {
-    newErrors.nickname = 'Account nickname must be between 5 and 30 characters';
+    newErrors.nickname = VALIDATION_MESSAGES.NICKNAME_LENGTH;
   }
 
   if (accountType === 'savings') {
     if (!savingsGoal) {
-      newErrors.savingsGoal = 'Savings goal is required for savings accounts';
+      newErrors.savingsGoal = VALIDATION_MESSAGES.SAVINGS_GOAL_REQUIRED;
     } else {
       const amount = parseFloat(savingsGoal);
       if (Number.isNaN(amount)) {
-        newErrors.savingsGoal = 'Savings goal must be a valid number';
+        newErrors.savingsGoal = VALIDATION_MESSAGES.SAVINGS_GOAL_INVALID;
       } else if (amount > 1_000_000) {
-        newErrors.savingsGoal = 'Savings goal cannot exceed $1,000,000';
+        newErrors.savingsGoal = VALIDATION_MESSAGES.SAVINGS_GOAL_MAX;
       }
     }
   }

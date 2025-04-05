@@ -1,4 +1,5 @@
 import { validateFormData } from '@/app/utils/validateFormData';
+import { VALIDATION_MESSAGES } from '@/constants/messages';
 
 describe('validateFormData', () => {
   it('should pass with valid everyday account', () => {
@@ -21,9 +22,7 @@ describe('validateFormData', () => {
     });
 
     expect(result.isValid).toBe(false);
-    expect(result.errors.nickname).toBe(
-      'Account nickname must be between 5 and 30 characters'
-    );
+    expect(result.errors.nickname).toBe(VALIDATION_MESSAGES.NICKNAME_LENGTH);
   });
 
   it('should return error if savingsGoal is required but missing', () => {
@@ -35,7 +34,7 @@ describe('validateFormData', () => {
 
     expect(result.isValid).toBe(false);
     expect(result.errors.savingsGoal).toBe(
-      'Savings goal is required for savings accounts'
+      VALIDATION_MESSAGES.SAVINGS_GOAL_REQUIRED
     );
   });
 
@@ -48,7 +47,7 @@ describe('validateFormData', () => {
 
     expect(result.isValid).toBe(false);
     expect(result.errors.savingsGoal).toBe(
-      'Savings goal cannot exceed $1,000,000'
+      VALIDATION_MESSAGES.SAVINGS_GOAL_MAX
     );
   });
 });

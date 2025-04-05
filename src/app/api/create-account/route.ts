@@ -1,25 +1,25 @@
 import { SanitizedFormData, sanitizeInput } from '@/app/utils/sanitizeInput';
+import { VALIDATION_MESSAGES } from '@/constants/messages';
 import { NextResponse } from 'next/server';
 
 const validateRequest = (data: SanitizedFormData) => {
   const { nickname, accountType, savingsGoal } = data;
 
   if (!nickname || nickname.length < 5 || nickname.length > 30)
-    return 'Account nickname must be between 5 and 30 characters';
+    return VALIDATION_MESSAGES.NICKNAME_LENGTH;
 
   if (accountType !== 'everyday' && accountType !== 'savings')
-    return 'Account type must be either "everyday" or "savings"';
+    return VALIDATION_MESSAGES.ACCOUNT_TYPE_INVALID;
 
   if (accountType === 'savings') {
-    if (!savingsGoal) return 'Savings goal is required for savings accounts';
+    if (!savingsGoal) return VALIDATION_MESSAGES.SAVINGS_GOAL_REQUIRED;
 
     const savingsGoalNum = +savingsGoal;
 
     if (Number.isNaN(savingsGoalNum))
-      return 'Savings goal must be a valid number';
+      return VALIDATION_MESSAGES.SAVINGS_GOAL_INVALID;
 
-    if (savingsGoalNum > 1_000_000)
-      return 'Savings goal cannot exceed $1,000,000';
+    if (savingsGoalNum > 1_000_000) return VALIDATION_MESSAGES.SAVINGS_GOAL_MAX;
   }
 
   return null;
