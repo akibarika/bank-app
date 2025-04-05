@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { ChangeEvent, useState } from 'react';
 import { validateFormData } from '../utils/validateFormData';
 
-// Define types for form data
 type AccountType = 'everyday' | 'savings';
 
 export type FormDataType = {
