@@ -7,7 +7,7 @@ import { ChangeEvent, useState } from 'react';
 // Define types for form data
 type AccountType = 'everyday' | 'savings';
 
-type FormDataType = {
+export type FormDataType = {
   nickname: string;
   accountType: AccountType;
   savingsGoal: string;
@@ -44,20 +44,24 @@ export default function CreateAccount() {
     const newErrors: ValidationErrorsType = {};
 
     // Account nickname validation (5-30 characters)
-    if (formData.nickname.length < 5 || formData.nickname.length > 30) {
+    const nickname = formData.nickname.trim();
+
+    if (nickname.length < 5 || nickname.length > 30) {
       newErrors.nickname =
         'Account nickname must be between 5 and 30 characters';
     }
 
     // Savings goal validation for savings account
     if (formData.accountType === 'savings') {
-      if (!formData.savingsGoal) {
+      // savingsGoal is from a number input, but trim() defends against pasted or autofill space
+      const trimmedGoal = formData.savingsGoal.trim();
+      if (!trimmedGoal) {
         newErrors.savingsGoal = 'Savings goal is required for savings accounts';
       } else {
-        const savingsGoalAmount = parseFloat(formData.savingsGoal);
-        if (isNaN(savingsGoalAmount)) {
+        const savingsGoalAmount = parseFloat(trimmedGoal);
+        if (Number.isNaN(savingsGoalAmount)) {
           newErrors.savingsGoal = 'Savings goal must be a valid number';
-        } else if (savingsGoalAmount > 1000000) {
+        } else if (savingsGoalAmount > 1_000_000) {
           newErrors.savingsGoal = 'Savings goal cannot exceed $1,000,000';
         }
       }
@@ -83,7 +87,7 @@ export default function CreateAccount() {
         accountType: formData.accountType,
         savingsGoal:
           formData.accountType === 'savings'
-            ? parseFloat(formData.savingsGoal)
+            ? parseFloat(formData.savingsGoal.trim())
             : undefined,
       };
 
@@ -98,8 +102,11 @@ export default function CreateAccount() {
       });
 
       if (!response.ok) {
-        // TODO: Handle error and display error message to user
-        console.error('Failed to create account');
+        // Note: a simple error message is returned from the API
+        const errorMessage = await response.json();
+        return router.push(
+          `/?error=true&message=${encodeURIComponent(errorMessage.error)}`
+        );
       }
 
       // Redirect back to home with success message
@@ -110,6 +117,7 @@ export default function CreateAccount() {
       setIsSubmitting(false);
     }
   };
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-8">
       <div className="w-full max-w-md rounded-lg border border-stone-300 bg-white p-6 shadow-xl">
@@ -206,7 +214,7 @@ export default function CreateAccount() {
                 placeholder="Enter a savings goal up to $1,000,000"
                 // Note: Native validation attributes are commented out to allow testing custom error messages.
                 // min={0}
-                // max={1000000}
+                // max={1_000_000}
                 // step={0.01}
               />
               {errors.savingsGoal && (
