@@ -1,3 +1,9 @@
+/**
+ * This is an integration test for the CreateAccount component.
+ * It tests the form submission and redirects to the success page.
+ * It also tests the validation errors for invalid nickname.
+ */
+
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { useRouter } from 'next/navigation';

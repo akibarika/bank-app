@@ -51,6 +51,8 @@ export default function CreateAccount() {
     }
 
     setIsSubmitting(true);
+    // Clear errors after submission
+    setErrors({});
 
     try {
       // Convert savings goal to number for the API call
