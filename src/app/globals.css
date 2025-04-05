@@ -1,6 +1,22 @@
+/* Custom fonts */
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@200..900&display=swap');
+
+/* Tailwind CSS */
 @import 'tailwindcss';
 
 @layer base {
+  /* Hide the default number input arrows */
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  html,
+  body {
+    font-family: 'Source Sans 3', sans-serif;
+  }
+
   h1,
   h2,
   h3,
