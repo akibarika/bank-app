@@ -13,7 +13,7 @@ export type FormDataType = {
   savingsGoal: string;
 };
 
-type ValidationErrorsType = {
+export type ValidationErrorsType = {
   nickname?: string;
   savingsGoal?: string;
 };

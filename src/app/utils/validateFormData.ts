@@ -1,10 +1,5 @@
 import { VALIDATION_MESSAGES } from '@/constants/messages';
-import { FormDataType } from '../create-account/page';
-
-type ValidationErrorsType = {
-  nickname?: string;
-  savingsGoal?: string;
-};
+import { FormDataType, ValidationErrorsType } from '../create-account/page';
 
 const sanitizeFormData = (data: FormDataType) => ({
   nickname: data.nickname.trim(),
