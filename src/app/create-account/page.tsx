@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ChangeEvent, useState } from 'react';
+import { validateFormData } from '../utils/validateFormData';
 
 // Define types for form data
 type AccountType = 'everyday' | 'savings';
@@ -39,43 +40,15 @@ export default function CreateAccount() {
     }));
   };
 
-  // Validate form data
-  const validateForm = (): boolean => {
-    const newErrors: ValidationErrorsType = {};
-
-    // Account nickname validation (5-30 characters)
-    const nickname = formData.nickname.trim();
-
-    if (nickname.length < 5 || nickname.length > 30) {
-      newErrors.nickname =
-        'Account nickname must be between 5 and 30 characters';
-    }
-
-    // Savings goal validation for savings account
-    if (formData.accountType === 'savings') {
-      // savingsGoal is from a number input, but trim() defends against pasted or autofill space
-      const trimmedGoal = formData.savingsGoal.trim();
-      if (!trimmedGoal) {
-        newErrors.savingsGoal = 'Savings goal is required for savings accounts';
-      } else {
-        const savingsGoalAmount = parseFloat(trimmedGoal);
-        if (Number.isNaN(savingsGoalAmount)) {
-          newErrors.savingsGoal = 'Savings goal must be a valid number';
-        } else if (savingsGoalAmount > 1_000_000) {
-          newErrors.savingsGoal = 'Savings goal cannot exceed $1,000,000';
-        }
-      }
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // Validate form
-    if (!validateForm()) return;
+    // Validate form with sanitization
+    const { isValid, sanitized, errors } = validateFormData(formData);
+    if (!isValid) {
+      setErrors(errors);
+      return;
+    }
 
     setIsSubmitting(true);
 
@@ -83,11 +56,11 @@ export default function CreateAccount() {
       // Convert savings goal to number for the API call
       // {nickname: 'My savings account', savingsGoal: 500, accountType: 'savings'}
       const payload = {
-        nickname: formData.nickname,
-        accountType: formData.accountType,
+        nickname: sanitized.nickname,
+        accountType: sanitized.accountType,
         savingsGoal:
-          formData.accountType === 'savings'
-            ? parseFloat(formData.savingsGoal.trim())
+          sanitized.accountType === 'savings'
+            ? parseFloat(sanitized.savingsGoal)
             : undefined,
       };
 

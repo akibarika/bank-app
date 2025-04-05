@@ -1,7 +1,7 @@
-import { FormDataType } from '@/app/create-account/page';
+import { SanitizedFormData, sanitizeInput } from '@/app/utils/sanitizeInput';
 import { NextResponse } from 'next/server';
 
-const validateRequest = (data: FormDataType) => {
+const validateRequest = (data: SanitizedFormData) => {
   const { nickname, accountType, savingsGoal } = data;
 
   if (!nickname || nickname.length < 5 || nickname.length > 30)
@@ -11,8 +11,7 @@ const validateRequest = (data: FormDataType) => {
     return 'Account type must be either "everyday" or "savings"';
 
   if (accountType === 'savings') {
-    if (savingsGoal === undefined || savingsGoal === null || savingsGoal === '')
-      return 'Savings goal is required for savings accounts';
+    if (!savingsGoal) return 'Savings goal is required for savings accounts';
 
     const savingsGoalNum = +savingsGoal;
 
@@ -26,7 +25,7 @@ const validateRequest = (data: FormDataType) => {
   return null;
 };
 
-const isFormDataType = (data: unknown): data is FormDataType => {
+const isFormDataType = (data: unknown): data is SanitizedFormData => {
   if (typeof data !== 'object' || data === null) return false;
   const d = data as Record<string, unknown>;
   return (
@@ -37,7 +36,8 @@ const isFormDataType = (data: unknown): data is FormDataType => {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const raw = await request.json();
+    const body = sanitizeInput(raw);
 
     // Validate the request data type
     if (!isFormDataType(body)) {
@@ -49,7 +49,6 @@ export async function POST(request: Request) {
 
     // Validate the request data
     // It's redundant with frontend validation, but it's a good practice in a real app. (Backend validation)
-
     const validationError = validateRequest(body);
     if (validationError) {
       return NextResponse.json({ error: validationError }, { status: 400 });
@@ -67,11 +66,11 @@ export async function POST(request: Request) {
         success: true,
         message: 'Account created successfully',
         account: {
-          id: `acc_${Date.now()}`,
+          id: crypto.randomUUID(),
           nickname,
           accountType,
           createdAt: new Date().toISOString(),
-          ...(accountType === 'savings' && { savingsGoal: +savingsGoal }),
+          ...(accountType === 'savings' && { savingsGoal: +savingsGoal! }),
         },
       },
       { status: 201 }
